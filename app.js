@@ -7,7 +7,7 @@ const CRITERIA = [
   { key: "gear", label: "Tack & strapper", max: 15, hint: "Gear fitted and tidy. Strapper neat and in control." }
 ];
 const LS = "yardcard.party.v2";
-const STORE_KEY = "yardcard.store.v3";
+const STORE_KEY = "yardcard.store.v4";
 const $ = (s, el=document) => el.querySelector(s);
 const view = $("#view");
 let CARD = null;
@@ -249,7 +249,15 @@ async function renderHost() {
   navActive("host");
   $("#dock")?.remove();
   const state = await api("/api/state");
-  view.innerHTML = `<section class="hero"><div class="kicker">Host</div><h1>Tables and winners</h1><p>Leave-suite times are T-20. Present before they jump.</p></section><div class="card">${state.board.map(r => `<div class="race"><div class="rn${groupTag(r)==="GROUP 1"?" g1":""}">${r.raceNumber}</div><div class="meta"><div class="kicker">leave ${r.leaveSuite || ""} · ${r.live} live / ${r.scratched} scr</div><b>${r.name}</b><div class="who">${(r.attachment?.members || []).join(" · ") || "No table"}</div></div><div>${r.winner ? `<span class="chip">${r.winner.cloth} ${r.winner.name} ${r.winner.total}</span>` : `<span class="muted">${r.scoredCount} scored</span>`}</div></div>`).join("")}</div>`;
+  view.innerHTML = `<section class="hero"><div class="kicker">Host</div><h1>Tables and winners</h1><p>Leave-suite times are T-20. Present before they jump.</p></section><button class="btn ghost" id="resetAll" style="width:100%;margin:0 0 14px">Reset all scores</button><div class="card">${state.board.map(r => `<div class="race"><div class="rn${groupTag(r)==="GROUP 1"?" g1":""}">${r.raceNumber}</div><div class="meta"><div class="kicker">leave ${r.leaveSuite || ""} · ${r.live} live / ${r.scratched} scr</div><b>${r.name}</b><div class="who">${(r.attachment?.members || []).join(" · ") || "No table"}</div></div><div>${r.winner ? `<span class="chip">${r.winner.cloth} ${r.winner.name} ${r.winner.total}</span>` : `<span class="muted">${r.scoredCount} scored</span>`}</div></div>`).join("")}</div>`;
+  $("#resetAll").onclick = async () => {
+    if (!confirm("Clear every score on this phone and start the day clean?")) return;
+    try {
+      await api("/api/host/reset", { method: "POST", body: JSON.stringify({}) });
+      toast("All races reset");
+      renderHost();
+    } catch (e) { toast(e.message || "Reset failed"); }
+  };
 }
 function liftDock() {
   const dock = document.getElementById("dock");
