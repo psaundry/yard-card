@@ -3,10 +3,8 @@ const CRITERIA = [
   { key: "muscle", label: "Muscle & condition", max: 20 },
   { key: "grooming", label: "Grooming", max: 15 },
   { key: "legs", label: "Legs & feet", max: 10 },
-  { key: "movement", label: "Movement", max: 10 },
-  { key: "demeanour", label: "Demeanour", max: 10 },
-  { key: "tack", label: "Tack", max: 5 },
-  { key: "strapper", label: "Strapper", max: 10 },
+  { key: "presence", label: "Movement & demeanour", max: 20 },
+  { key: "gear", label: "Tack & strapper", max: 15 },
 ];
 const LS = "yardcard.party.v2";
 const STORE_KEY = "yardcard.store.v3";
@@ -98,15 +96,15 @@ async function api(path, opts) {
   }
   if (path === "/api/score" && method === "POST") {
     const marks = body.marks || {};
-    const total = ["build","muscle","grooming","legs","movement","demeanour","tack","strapper"]
-      .reduce((s,k) => s + Number(marks[k]||0), 0);
+    const marksN = normalizeMarks(marks);
+    const total = CRITERIA.reduce((s,c) => s + Number(marksN[c.key]||0), 0);
     const store = loadStore();
     store.scores = store.scores || {};
     const n = String(body.raceNumber);
     store.scores[n] = store.scores[n] || {};
     store.scores[n][String(body.cloth)] = {
-      cloth: body.cloth, name: body.name, marks, note: body.note || "",
-      total, tie: Number(marks.muscle||0)+Number(marks.grooming||0), partyId: body.partyId
+      cloth: body.cloth, name: body.name, marks: marksN, note: body.note || "",
+      total, tie: Number(marksN.muscle||0)+Number(marksN.grooming||0), partyId: body.partyId
     };
     saveStore(store);
     return store.scores[n][String(body.cloth)];
@@ -138,7 +136,19 @@ function stepValues(max) {
   if (max === 15) return [9,10,11,12,13,14,15];
   return [12,14,16,18,20];
 }
-function totalOf(marks) { return CRITERIA.reduce((s,c) => s + (Number(marks?.[c.key]) || 0), 0); }
+function normalizeMarks(m) {
+  m = { ...(m || {}) };
+  if (m.presence == null && (m.movement != null || m.demeanour != null)) {
+    const v = Number(m.movement || 0) + Number(m.demeanour || 0);
+    if (v) m.presence = Math.min(20, v);
+  }
+  if (m.gear == null && (m.tack != null || m.strapper != null)) {
+    const v = Number(m.tack || 0) + Number(m.strapper || 0);
+    if (v) m.gear = Math.min(15, v);
+  }
+  return m;
+}
+function totalOf(marks) { return CRITERIA.reduce((s,c) => s + (Number(normalizeMarks(marks)?.[c.key]) || 0), 0); }
 
 async function renderJudgeHome() {
   navActive("judge");
@@ -184,7 +194,7 @@ async function renderRace(n) {
   const live = raceCache.horses.filter(h => !h.scratched);
   live.forEach(h => {
     const existing = raceCache.scores[String(h.cloth)];
-    h.marks = existing ? { ...existing.marks } : {};
+    h.marks = existing ? normalizeMarks(existing.marks) : {};
     h.note = existing?.note || "";
   });
   raceCache.live = live;
