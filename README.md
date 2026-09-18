@@ -1,18 +1,13 @@
-# Yard Card — Might and Power Club
+# Yard Card — Pat Saundry / Might and Power Club
 
 Underwood Stakes Day · Caulfield · 19 September 2026
 
+Owner: [patsaundry](https://github.com/patsaundry) · working copy on [psaundry/yard-card](https://github.com/psaundry/yard-card)
+
 This repository is the club copy. It is not a public product.
 
-## Open on a phone (Chrome on iPhone 12)
+## Phone
 
-GitHub Pages is not enabled on this account, so https://psaundry.github.io returns 404.
-Use one of these instead:
-
-1. Download `index.html` from this repo, AirDrop it to the phone, open it in Files, then Chrome or Safari.
-2. Preview in the browser (no Pages needed):
-   https://htmlpreview.github.io/?https://github.com/psaundry/yard-card/blob/main/index.html
-
-Host PIN is the club code already in the app.
-
-Scores stay on the phone that enters them.
+1. Enable Pages on [psaundry.github.io](https://github.com/psaundry/psaundry.github.io/settings/pages) (branch `main`, folder `/root`).
+2. Open https://psaundry.github.io/ in Chrome.
+3. Or download `index.html` from this repo and open it from Files on the iPhone.
