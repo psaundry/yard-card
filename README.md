@@ -1,11 +1,18 @@
-# Yard Card
+# Yard Card — Might and Power Club
 
-Might and Power Club — best presented horse, Caulfield Saturday 19 September 2026.
+Underwood Stakes Day · Caulfield · 19 September 2026
 
-GitHub Pages on this account is returning 404, so use one of these on the phone:
+This repository is the club copy. It is not a public product.
 
-1. **Best on iPhone Chrome:** open the attached `Yard-Card.html` file
-2. **Online copy:** https://raw.githack.com/psaundry/yard-card/main/index.html
-3. **Backup:** https://cdn.jsdelivr.net/gh/psaundry/yard-card@main/index.html
+## Open on a phone (Chrome on iPhone 12)
 
-One phone per table. Tap **This is us**. Host pin `mpc19`.
+GitHub Pages is not enabled on this account, so https://psaundry.github.io returns 404.
+Use one of these instead:
+
+1. Download `index.html` from this repo, AirDrop it to the phone, open it in Files, then Chrome or Safari.
+2. Preview in the browser (no Pages needed):
+   https://htmlpreview.github.io/?https://github.com/psaundry/yard-card/blob/main/index.html
+
+Host PIN is the club code already in the app.
+
+Scores stay on the phone that enters them.
