@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Yard Card · Might and Power Club</title>
   <meta name="theme-color" content="#14110d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="format-detection" content="telephone=no" />
-  <base href="/yard-card/" />
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
@@ -18,10 +21,10 @@
       <div class="silk" aria-hidden="true"></div>
       <div class="brand"><b>Yard Card</b><small>MPC · Caulfield</small></div>
     </div>
-    <nav class="tabs">
-      <a href="#/judge" data-nav="judge">Yard</a>
-      <a href="#/board" data-nav="board">Board</a>
-      <a href="#/host" data-nav="host">Host</a>
+    <nav class="tabs" role="tablist">
+      <button type="button" data-nav="judge">Yard</button>
+      <button type="button" data-nav="board">Board</button>
+      <button type="button" data-nav="host">Host</button>
     </nav>
   </header>
   <main id="view"></main>
