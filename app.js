@@ -77,6 +77,7 @@ async function boot() {
     return CARD;
   }
   CARD = Object.assign({}, window.CARD_META || {}, {
+    tables: window.CARD_TABLES || window.CARD_META?.tables || [],
     races: [].concat(window.CARD_RACES_A || [], window.CARD_RACES_B || [])
   });
   if (!CARD.races || !CARD.races.length) throw new Error("Card did not load");
