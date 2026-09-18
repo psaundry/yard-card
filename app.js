@@ -69,7 +69,10 @@ function groupTag(r) {
 }
 async function boot() {
   if (CARD) return CARD;
-  CARD = window.CARD_DATA;
+  CARD = Object.assign({}, window.CARD_META || {}, {
+    tables: window.CARD_TABLES || [],
+    races: [].concat(window.CARD_RACES_A || [], window.CARD_RACES_B || [])
+  });
   return CARD;
 }
 async function api(path, opts) {
