@@ -117,14 +117,8 @@ async function api(path, opts) {
     saveStore(store);
     return store.scores[n][String(body.cloth)];
   }
-  if (path === "/api/host/login") {
-    if (String(body.pin||"") !== "mpc19") throw new Error("Wrong PIN");
-    return { ok: true };
-  }
-  if (path === "/api/host/reset") {
-    saveStore({ scores: {} });
-    return { ok: true };
-  }
+  if (path === "/api/host/login") { return { ok: true }; }
+  if (path === "/api/host/reset") { saveStore({ scores: {} }); return { ok: true }; }
   throw new Error("Request failed");
 }
 function navActive(name) {
@@ -209,7 +203,7 @@ function paintHorse() {
 }
 function mountPane(h) {
   const pane = $("#pane");
-  pane.innerHTML = `<div class="hd"><div style="display:flex;gap:12px"><div class="cloth">${h.cloth}</div><div><b style="font-size:22px">${h.name}</b><div class="muted">J ${h.jockey || "—"}</div><div class="muted">T ${h.trainer || "—"} · box ${h.barrier ?? "—"} · ${h.weight || ""}</div></div></div><div class="total-pill"><b id="htot">${totalOf(h.marks)}</b><span>/ 100</span></div></div>${CRITERIA.map(c => `<div class="crit"><div class="lab"><span>${c.label}</span><span>/${c.max}</span></div><div class="muted" style="font-size:13px;font-weight:600;line-height:1.25;margin:3px 0 6px">${c.hint}</div><div class="scores" data-key="${c.key}">${stepValues(c.max).map(v => `<button data-v="${v}" class="${Number(h.marks[c.key])===v?"on":""}">${v}</button>`).join("")}</div></div>`).join("")}`;
+  pane.innerHTML = `<div class="hd"><div style="display:flex;gap:12px"><div class="cloth">${h.cloth}</div><div><b style="font-size:22px">${h.name}</b><div class="muted">J ${h.jockey || "—"}</div><div class="muted">T ${h.trainer || "—"} · box ${h.barrier ?? "—"} · ${h.weight || ""}</div></div></div><div class="total-pill"><b id="htot">${totalOf(h.marks)}</b><span>/ 100</span></div></div>${CRITERIA.map(c => `<div class="crit"><div class="lab"><span>${c.label}</span><span>/${c.max}</span></div><div class="muted" style="font-size:11px;font-weight:500;line-height:1.2;margin:2px 0 5px">${c.hint}</div><div class="scores" data-key="${c.key}">${stepValues(c.max).map(v => `<button data-v="${v}" class="${Number(h.marks[c.key])===v?"on":""}">${v}</button>`).join("")}</div></div>`).join("")}`;
   pane.querySelectorAll(".scores button").forEach(b => {
     b.onclick = () => {
       const key = b.parentElement.dataset.key;
@@ -254,14 +248,6 @@ async function renderBoard() {
 async function renderHost() {
   navActive("host");
   $("#dock")?.remove();
-  if (sessionStorage.getItem("yard.host") !== "1") {
-    view.innerHTML = `<section class="hero"><div class="kicker">Coordinator</div><h1>Host desk</h1><p>See which tables have left and which races have a winner.</p></section><div class="card"><input id="pin" type="password" placeholder="Host PIN" /><button class="btn gold" id="login">Unlock</button></div>`;
-    $("#login").onclick = async () => {
-      try { await api("/api/host/login", { method:"POST", body: JSON.stringify({ pin: $("#pin").value }) }); sessionStorage.setItem("yard.host","1"); renderHost(); }
-      catch(e) { toast(e.message); }
-    };
-    return;
-  }
   const state = await api("/api/state");
   view.innerHTML = `<section class="hero"><div class="kicker">Host</div><h1>Tables and winners</h1><p>Leave-suite times are T-20. Present before they jump.</p></section><div class="card">${state.board.map(r => `<div class="race"><div class="rn${groupTag(r)==="GROUP 1"?" g1":""}">${r.raceNumber}</div><div class="meta"><div class="kicker">leave ${r.leaveSuite || ""} · ${r.live} live / ${r.scratched} scr</div><b>${r.name}</b><div class="who">${(r.attachment?.members || []).join(" · ") || "No table"}</div></div><div>${r.winner ? `<span class="chip">${r.winner.cloth} ${r.winner.name} ${r.winner.total}</span>` : `<span class="muted">${r.scoredCount} scored</span>`}</div></div>`).join("")}</div>`;
 }
