@@ -22,7 +22,10 @@ function loadStore() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null") || { scores: {} }; }
   catch { return { scores: {} }; }
 }
-function saveStore(s) { localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+function saveStore(s) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+  catch (e) { console.warn("store", e); }
+}
 function attachmentsFrom(card) {
   const out = {};
   (card.tables || []).forEach(t => {
@@ -56,7 +59,7 @@ function toast(msg) {
   setTimeout(() => t.classList.add("hidden"), 1600);
 }
 function loadParty() { try { return JSON.parse(localStorage.getItem(LS) || "null"); } catch { return null; } }
-function saveParty(p) { localStorage.setItem(LS, JSON.stringify(p)); }
+function saveParty(p) { try { localStorage.setItem(LS, JSON.stringify(p)); } catch (e) { console.warn("party", e); } }
 function fmtTime(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" });
@@ -69,10 +72,14 @@ function groupTag(r) {
 }
 async function boot() {
   if (CARD) return CARD;
+  if (window.CARD_DATA && window.CARD_DATA.races) {
+    CARD = window.CARD_DATA;
+    return CARD;
+  }
   CARD = Object.assign({}, window.CARD_META || {}, {
-    tables: window.CARD_TABLES || [],
     races: [].concat(window.CARD_RACES_A || [], window.CARD_RACES_B || [])
   });
+  if (!CARD.races || !CARD.races.length) throw new Error("Card did not load");
   return CARD;
 }
 async function api(path, opts) {
@@ -117,6 +124,7 @@ function navActive(name) {
   document.querySelectorAll("[data-nav]").forEach(a => a.classList.toggle("active", a.dataset.nav === name));
 }
 function route() {
+  $("#toast")?.classList.add("hidden");
   const parts = (location.hash.replace("#", "") || "/judge").split("/").filter(Boolean);
   if (parts[0] === "board") return renderBoard();
   if (parts[0] === "host") return renderHost();
@@ -134,7 +142,6 @@ function totalOf(marks) { return CRITERIA.reduce((s,c) => s + (Number(marks?.[c.
 async function renderJudgeHome() {
   navActive("judge");
   $("#dock")?.remove();
-  localStorage.removeItem(LS);
   const state = await api("/api/state");
   view.innerHTML = `
     <section class="hero">
@@ -211,7 +218,10 @@ function paintHorse() {
       <button class="btn ghost" style="width:100%" id="back">Back to tables</button>
     </div>`;
   document.querySelectorAll(".progress [data-i]").forEach(b => b.onclick = () => { horseIndex = Number(b.dataset.i); paintHorse(); });
-  $("#back").onclick = () => { location.hash = "#/judge"; };
+  $("#back").onclick = () => {
+    try { localStorage.removeItem(LS); } catch {}
+    location.hash = "#/judge";
+  };
   mountPane(h);
   mountDock();
 }
@@ -275,6 +285,7 @@ function mountDock() {
     toast(h.name + " · " + totalOf(h.marks));
     if (horseIndex < live.length - 1) goHorse(1);
   };
+  liftDock();
 }
 
 async function renderBoard() {
@@ -332,8 +343,55 @@ async function renderHost() {
     </div>`;
 }
 
-window.addEventListener("hashchange", route);
-route();
-setInterval(() => {
-  if (/board|host/.test(location.hash)) route();
-}, 8000);
+function liftDock() {
+  const dock = document.getElementById("dock");
+  if (!dock) return;
+  const vv = window.visualViewport;
+  let inset = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+  const crios = document.documentElement.classList.contains("crios");
+  if (crios && inset < 52) inset = 56;
+  dock.style.bottom = inset + "px";
+  const toast = document.getElementById("toast");
+  if (toast) toast.style.bottom = (inset + 84) + "px";
+}
+function goTab(name) {
+  const next = "#/" + name;
+  if (location.hash === next) route();
+  else location.hash = next;
+}
+function bindNav() {
+  document.querySelectorAll("[data-nav]").forEach(a => {
+    const go = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      goTab(a.dataset.nav);
+    };
+    a.onclick = go;
+    a.ontouchend = (e) => { e.preventDefault(); goTab(a.dataset.nav); };
+  });
+}
+function start() {
+  try {
+    if (/CriOS/i.test(navigator.userAgent)) document.documentElement.classList.add("crios");
+    if (!(window.CARD_DATA && window.CARD_DATA.races) && !((window.CARD_RACES_A||[]).length + (window.CARD_RACES_B||[]).length)) {
+      view.innerHTML = '<section class="hero"><h1>Card did not load</h1><p>Refresh the page on this phone. If it stays blank, open the file from Files or Safari.</p></section>';
+      return;
+    }
+    bindNav();
+    window.addEventListener("hashchange", route);
+    window.addEventListener("resize", liftDock);
+    window.addEventListener("orientationchange", liftDock);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", liftDock);
+      window.visualViewport.addEventListener("scroll", liftDock);
+    }
+    route();
+    setInterval(() => {
+      if (/board|host/.test(location.hash)) route();
+    }, 8000);
+  } catch (e) {
+    view.innerHTML = '<section class="hero"><h1>Something broke</h1><p>' + String(e.message || e) + '</p></section>';
+  }
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+else start();
